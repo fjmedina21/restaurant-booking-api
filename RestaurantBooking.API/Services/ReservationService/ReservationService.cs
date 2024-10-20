@@ -22,10 +22,37 @@ namespace RestaurantBooking.API.Services.ReservationService
                 .AsQueryable();
         }
 
-        public async Task<ApiResponse<ReservationGDto>> GetAllAsync(PaginationParams paginationParams)
+        public Task<ApiResponse<ReservationGDto>> GetAllAsync(PaginationParams paginationParams) => throw new NotImplementedException();
+        public async Task<ApiResponse<ReservationGDto>> GetAllAsync(PaginationParams paginationParams, string? status)
         {
             List<Reservation> entities = await LoadData().AsNoTracking().ToListAsync();
             List<ReservationGDto> dto = mapper.Map<List<ReservationGDto>>(entities);
+
+            if (!String.IsNullOrEmpty(status))
+            {
+                switch (status)
+                {
+                    case "Pending":
+                        dto = dto.Where(e => e.Status == ReservationStatus.Pending.ToString()).ToList();
+                        break;
+                    case "Approved":
+                        dto = dto.Where(e => e.Status == ReservationStatus.Approved.ToString()).ToList();
+                        break;
+                    case "Cancelled":
+                        dto = dto.Where(e => e.Status == ReservationStatus.Cancelled.ToString()).ToList();
+                        break;
+                    case "Rejected":
+                        dto = dto.Where(e => e.Status == ReservationStatus.Rejected.ToString()).ToList();
+                        break;
+                    case "Completed":
+                        dto = dto.Where(e => e.Status == ReservationStatus.Completed.ToString()).ToList();
+                        break;
+                    default:
+                        return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status200OK, detail: "Status not available");
+                        break;
+                }
+            }
+
             List<ReservationGDto> listedItems = PagedList<ReservationGDto>
                 .ToPagedList(source: dto, currentPage: paginationParams.CurrentPage, pageSize: paginationParams.PageSize);
 

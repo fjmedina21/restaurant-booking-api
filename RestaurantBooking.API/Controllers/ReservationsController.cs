@@ -10,9 +10,8 @@ namespace RestaurantBooking.API.Controllers
     {
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAll([FromQuery] PaginationParams paginationParams)
-        {
-            ApiResponse<ReservationGDto> response = await reservationService.GetAllAsync(paginationParams);
+        public async Task<IActionResult> GetAll([FromQuery] PaginationParams paginationParams, [FromQuery] string? status) {
+            ApiResponse<ReservationGDto> response = await reservationService.GetAllAsync(paginationParams, status);
             return StatusCode(response.StatusCode, response);
         }
 
