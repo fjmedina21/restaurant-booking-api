@@ -30,21 +30,21 @@ namespace RestaurantBooking.API.Services.ReservationService
 
             if (!String.IsNullOrEmpty(status))
             {
-                switch (status)
+                switch (status.ToLower())
                 {
-                    case "Pending":
+                    case "pending":
                         dto = dto.Where(e => e.Status == ReservationStatus.Pending.ToString()).ToList();
                         break;
-                    case "Approved":
+                    case "ppproved":
                         dto = dto.Where(e => e.Status == ReservationStatus.Approved.ToString()).ToList();
                         break;
-                    case "Cancelled":
+                    case "cancelled":
                         dto = dto.Where(e => e.Status == ReservationStatus.Cancelled.ToString()).ToList();
                         break;
-                    case "Rejected":
+                    case "rejected":
                         dto = dto.Where(e => e.Status == ReservationStatus.Rejected.ToString()).ToList();
                         break;
-                    case "Completed":
+                    case "completed":
                         dto = dto.Where(e => e.Status == ReservationStatus.Completed.ToString()).ToList();
                         break;
                     default:
@@ -74,7 +74,7 @@ namespace RestaurantBooking.API.Services.ReservationService
             if (reservations.Any(e => e.TableId == entity.TableId &&
                     e.ReservationStart < entity.ReservationEnd &&
                     e.ReservationEnd > entity.ReservationStart &&
-                    (e.Status != ReservationStatus.Cancelled && e.Status != ReservationStatus.Rejected)))
+                    (e.Status != ReservationStatus.Cancelled && e.Status != ReservationStatus.Rejected && e.Status != ReservationStatus.Completed)))
             {
                 return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status400BadRequest, detail: "Reservation conflict with existing reservations");
             }
@@ -118,19 +118,32 @@ namespace RestaurantBooking.API.Services.ReservationService
             Reservation? entity = await LoadData().FirstOrDefaultAsync(e => e.ReservationId.Equals(uid));
             if (entity is null) return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status404NotFound);
 
-            switch (status)
+            if((entity.Status == ReservationStatus.Cancelled
+                || entity.Status == ReservationStatus.Completed
+                || entity.Status == ReservationStatus.Rejected
+               || entity.Status == ReservationStatus.Approved)
+               && status.ToLower() == ReservationStatus.Rejected.ToString().ToLower())
+                return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status404NotFound, detail: $"Reservation cannot be rejected because it has already been {entity.Status.ToString().ToLower()}.");
+
+            switch (status.ToLower())
             {
-                case "Approved":
+                case "approved":
+                    if(entity.Status == ReservationStatus.Cancelled)
+                        return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status404NotFound, detail: $"Reservation cannot be rejected because it has already been {entity.Status.ToString().ToLower()}.");
                     entity.Status = ReservationStatus.Approved;
                     break;
-                case "Rejected":
+                case "rejected":
+                    if(entity.Status == ReservationStatus.Cancelled)
+                        return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status404NotFound, detail: $"Reservation cannot be rejected because it has already been {entity.Status.ToString().ToLower()}.");
                     entity.Status = ReservationStatus.Rejected;
                     break;
-                case "Completed":
+                case "completed":
+                    if(entity.Status == ReservationStatus.Cancelled)
+                        return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status404NotFound, detail: $"Reservation cannot be rejected because it has already been {entity.Status.ToString().ToLower()}.");
                     entity.Status = ReservationStatus.Completed;
                     break;
                 default:
-                    return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status400BadRequest);
+                    return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status400BadRequest, detail:"Status not available");
             }
 
             await dbContext.SaveChangesAsync();
@@ -149,6 +162,10 @@ namespace RestaurantBooking.API.Services.ReservationService
         {
             Reservation? entity = await LoadData().FirstOrDefaultAsync(e => e.ReservationCode == reservationCode);
             if (entity is null) return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status400BadRequest);
+
+            if(entity.Status == ReservationStatus.Completed || entity.Status == ReservationStatus.Cancelled || entity.Status == ReservationStatus.Rejected)
+                return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status404NotFound, detail: $"Reservation cannot be cancelled because it has already been {entity.Status.ToString().ToLower()}.");
+
             entity.Status = ReservationStatus.Cancelled;
             await dbContext.SaveChangesAsync();
 
@@ -177,7 +194,7 @@ namespace RestaurantBooking.API.Services.ReservationService
             if (dbEntity is null) return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status400BadRequest);
 
             if (dbEntity.Status == ReservationStatus.Approved || dbEntity.Status == ReservationStatus.Rejected || dbEntity.Status == ReservationStatus.Completed)
-                return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status403Forbidden, detail: $"Reservation cannot be modified because it has already been {dbEntity.Status}.");
+                return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status400BadRequest, detail: $"Reservation cannot be modified because it has already been {dbEntity.Status}.");
 
             bool isTableChanged = dbEntity.TableId != model.TableId;
             bool isTimeChanged = dbEntity.ReservationStart != model.ReservationStart || dbEntity.ReservationEnd != model.ReservationEnd;
@@ -188,7 +205,9 @@ namespace RestaurantBooking.API.Services.ReservationService
                     .Where(t => t.TableId == model.TableId)
                     .Where(t => t.Reservations.All(r =>
                         r.ReservationCode == dbEntity.ReservationCode || // Exclude the current reservation from conflict checks
-                        (r.Status == ReservationStatus.Cancelled || r.Status == ReservationStatus.Rejected || r.Status == ReservationStatus.Completed)
+                        (r.Status == ReservationStatus.Cancelled
+                         || r.Status == ReservationStatus.Rejected
+                         || r.Status == ReservationStatus.Completed)
                      || r.ReservationEnd <= model.ReservationStart // Ensure the new reservation doesn't overlap
                      || r.ReservationStart >= model.ReservationEnd)) // Ensure no overlapping reservations
                     .AnyAsync();
@@ -203,7 +222,9 @@ namespace RestaurantBooking.API.Services.ReservationService
                     .Where(t => t.TableId == model.TableId).AsNoTracking() // Check the original table
                     .Where(t => t.Reservations.All(r =>
                         r.ReservationCode == dbEntity.ReservationCode || // Exclude the current reservation from conflict checks
-                        (r.Status == ReservationStatus.Cancelled || r.Status == ReservationStatus.Rejected || r.Status == ReservationStatus.Completed ) // Ignore cancelled or rejected reservations
+                        (r.Status == ReservationStatus.Cancelled
+                         || r.Status == ReservationStatus.Rejected
+                         || r.Status == ReservationStatus.Completed ) // Ignore cancelled or rejected reservations
                      || r.ReservationEnd <= model.ReservationStart // Ensure the new reservation doesn't overlap
                      || r.ReservationStart >= model.ReservationEnd)) // Ensure no overlapping reservations
                     .AnyAsync();

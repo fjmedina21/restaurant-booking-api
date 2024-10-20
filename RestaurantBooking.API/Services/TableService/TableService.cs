@@ -63,7 +63,7 @@ namespace RestaurantBooking.API.Services.TableService
             List<Table> entities = await LoadData().AsNoTracking().ToListAsync();
             List<Table> availableTables = entities
                 .Where(e => e.Reservations.All(r =>
-                    (r.Status == ReservationStatus.Cancelled || r.Status == ReservationStatus.Rejected) // Only allow cancelled or completed reservations
+                    (r.Status == ReservationStatus.Cancelled || r.Status == ReservationStatus.Rejected || r.Status == ReservationStatus.Completed) // Only allow cancelled or completed reservations
                  || r.ReservationEnd.Date != reservationStart.Date // Allow if the dates are different
                  || r.ReservationEnd <= reservationStart)) // Ensure that any reservation ends before the new reservation starts if on the same date
                 .ToList();
