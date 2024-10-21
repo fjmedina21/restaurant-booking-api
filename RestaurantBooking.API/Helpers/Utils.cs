@@ -2,6 +2,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using MimeKit;
+using MailKit.Net.Smtp;
+using MimeKit.Text;
 using RestaurantBooking.API.Models.DTO;
 using RestaurantBooking.API.Models.Entities;
 using BC = BCrypt.Net.BCrypt;
@@ -89,6 +92,26 @@ namespace RestaurantBooking.API.Helpers
         public static bool ComparePassword(string password, string hashPassword)
         {
             return BC.EnhancedVerify(text: password, hash: hashPassword);
+        }
+
+        public async static Task SendEmailAsync(EmailDto request, IConfiguration configuration)
+        {
+            string host = configuration["MailSettings:host"]!;
+            int port = int.Parse(configuration["MailSettings:port"]!);
+            string user = configuration["MailSettings:auth:user"]!;
+            string password = configuration["MailSettings:auth:pass"]!;
+
+            var email = new MimeMessage();
+            email.From.Add(MailboxAddress.Parse(user));
+            email.To.Add(MailboxAddress.Parse(request.To));
+            email.Subject = request.Subject;
+            email.Body = new TextPart(TextFormat.Html) { Text = $"<p>{request.Body}</p>" };
+
+            var smtp = new SmtpClient();
+            await smtp.ConnectAsync(host, port);
+            await smtp.AuthenticateAsync(user, password);
+            await smtp.SendAsync(email);
+            await smtp.DisconnectAsync(true);
         }
     }
 }

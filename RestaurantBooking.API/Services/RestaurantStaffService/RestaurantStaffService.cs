@@ -2,9 +2,10 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using RestaurantBooking.API.Data;
 using RestaurantBooking.API.Helpers;
+using RestaurantBooking.API.Models.ApiResponse;
 using RestaurantBooking.API.Models.DTO;
 using RestaurantBooking.API.Models.Entities;
-using RestaurantBooking.API.Models.Pagination;
+using RestaurantBooking.API.Helpers.Pagination;
 
 namespace RestaurantBooking.API.Services.RestaurantStaffService
 {

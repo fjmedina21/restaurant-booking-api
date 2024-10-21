@@ -1,3 +1,4 @@
+using RestaurantBooking.API.Models.ApiResponse;
 using RestaurantBooking.API.Models.DTO;
 
 namespace RestaurantBooking.API.Services.TableService

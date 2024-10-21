@@ -1,7 +1,5 @@
 ﻿using Newtonsoft.Json;
-using RestaurantBooking.API.Models;
-using RestaurantBooking.API.Models.DTO;
-using RestaurantBooking.API.Models.DTOs;
+using RestaurantBooking.API.Models.ApiResponse;
 using RestaurantBooking.API.Models.DTOs.ThirdPartyServices;
 
 namespace RestaurantBooking.API.Helpers
@@ -18,7 +16,7 @@ namespace RestaurantBooking.API.Helpers
             string data = await response.Content.ReadAsStringAsync();
             var deserializedObject = JsonConvert.DeserializeObject<CedulaValidationResponse>(data)!;
 
-            if (!deserializedObject.Valid) return new ApiResponse<CedulaValidationResponse>(statusCode: (int)response.StatusCode, detail: deserializedObject.Message);
+            if (!deserializedObject.Valid) return new ApiResponse<CedulaValidationResponse>(statusCode: (int)response.StatusCode, message: deserializedObject.Message);
 
             return new ApiResponse<CedulaValidationResponse>();
         }

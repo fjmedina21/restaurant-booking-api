@@ -1,6 +1,6 @@
+using RestaurantBooking.API.Models.ApiResponse;
 using RestaurantBooking.API.Models.DTO;
-using RestaurantBooking.API.Models.Enums;
-using RestaurantBooking.API.Models.Pagination;
+using RestaurantBooking.API.Helpers.Pagination;
 
 namespace RestaurantBooking.API.Services.ReservationService
 {

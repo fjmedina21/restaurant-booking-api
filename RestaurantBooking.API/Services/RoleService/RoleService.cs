@@ -1,9 +1,10 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using RestaurantBooking.API.Data;
+using RestaurantBooking.API.Models.ApiResponse;
 using RestaurantBooking.API.Models.DTO;
 using RestaurantBooking.API.Models.Entities;
-using RestaurantBooking.API.Models.Pagination;
+using RestaurantBooking.API.Helpers.Pagination;
 
 namespace RestaurantBooking.API.Services.RoleService
 {
@@ -53,7 +54,7 @@ namespace RestaurantBooking.API.Services.RoleService
             Role? entity = await LoadData().FirstOrDefaultAsync(e => e.RoleId == uid);
             if (entity is null) return new ApiResponse<RoleGDto>(statusCode: StatusCodes.Status400BadRequest);
             if(entity.RestaurantStaff.Any())
-                return new ApiResponse<RoleGDto>(statusCode: StatusCodes.Status400BadRequest, detail: "This role cannot be deleted while it has staff assigned to it");
+                return new ApiResponse<RoleGDto>(statusCode: StatusCodes.Status400BadRequest, message: "This role cannot be deleted while it has staff assigned to it");
             entity.IsDeleted = true;
             await dbContext.SaveChangesAsync();
             return new ApiResponse<RoleGDto>(statusCode: StatusCodes.Status204NoContent);

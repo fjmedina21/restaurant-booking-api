@@ -25,7 +25,6 @@ namespace RestaurantBooking.API
             builder.Services.AddScoped<IRoleService, RoleService>();
             builder.Services.AddScoped<ITableService, TableService>();
             builder.Services.AddScoped<IReservationService, ReservationService>();
-
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace RestaurantBooking.API.Models.Pagination
+﻿namespace RestaurantBooking.API.Helpers.Pagination
 {
     public class PaginationParams
     {

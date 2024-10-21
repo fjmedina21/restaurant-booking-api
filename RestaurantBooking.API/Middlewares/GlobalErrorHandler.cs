@@ -1,7 +1,5 @@
 ﻿using System.Net;
-using RestaurantBooking.API.Models;
-using RestaurantBooking.API.Models.DTO;
-using RestaurantBooking.API.Models.DTOs;
+using RestaurantBooking.API.Models.ApiResponse;
 
 namespace RestaurantBooking.API.Middlewares
 {
@@ -20,15 +18,15 @@ namespace RestaurantBooking.API.Middlewares
 
                 var type = HttpStatusCode.InternalServerError.ToString();
                 var traceId = Guid.NewGuid().ToString();
-                var detail = ex.Message;
+                var message = ex.Message;
 
-                string message = $"{traceId} : {detail}";
-                logger.LogError(ex, message);
+                string detail = $"{traceId} : {message}";
+                logger.LogError(ex, detail);
 
                 var error = new ApiErrorResponse(
-                    StatusCode: context.Response.StatusCode,
-                    Error: type,
-                    ErrorDetail: new { traceId, detail });
+                    statusCode: context.Response.StatusCode,
+                    errormessage: new { traceId, detail }
+                    );
 
                 await context.Response.WriteAsJsonAsync(error);
             }

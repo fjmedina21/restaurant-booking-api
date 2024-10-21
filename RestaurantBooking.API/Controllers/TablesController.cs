@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using RestaurantBooking.API.Models.ApiResponse;
 using RestaurantBooking.API.Models.DTO;
-using RestaurantBooking.API.Models.Pagination;
+using RestaurantBooking.API.Helpers.Pagination;
 using RestaurantBooking.API.Services.TableService;
 
 namespace RestaurantBooking.API.Controllers

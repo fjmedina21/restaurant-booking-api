@@ -1,4 +1,4 @@
-﻿namespace RestaurantBooking.API.Models.Pagination
+﻿namespace RestaurantBooking.API.Helpers.Pagination
 {
     public class PagedList<T> : List<T>
     {
@@ -7,10 +7,10 @@
         public int PageCount { get; private set; }
         public int PageSize { get; private set; }
         public int TotalCount { get; private set; }
-        
+
         public bool HasPrevious => CurrentPage > 1;
         public bool HasNext => CurrentPage < TotalPages;
-        
+
         public PagedList(List<T> items, int totalCount, int currentPage, int pageCount, int pageSize)
         {
             TotalCount = totalCount;
@@ -20,7 +20,7 @@
             TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
             AddRange(items);
         }
-        
+
         public static PagedList<T> ToPagedList(ICollection<T> source, int currentPage, int pageSize)
         {
             var totalCount = source.Count;

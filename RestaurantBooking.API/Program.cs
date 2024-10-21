@@ -1,12 +1,12 @@
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using Serilog;
-using RestaurantBooking.API.Middlewares;
-using RestaurantBooking.API.Helpers;
 using RestaurantBooking.API.Data;
+using RestaurantBooking.API.Helpers;
+using RestaurantBooking.API.Middlewares;
 using RestaurantBooking.API;
+using Serilog;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((hostBuilderContext, loggerConfig) => loggerConfig.ReadFrom.Configuration(hostBuilderContext.Configuration));
@@ -56,7 +56,6 @@ builder.Services.AddSwaggerGen(option =>
 
 //DTO Mapping
 builder.Services.AddAutoMapper(typeof(MappingProfiles));
-
 //DependeciesInjections
 DependeciesInjections.AddScoped(builder);
 DependeciesInjections.AddTransient(builder);
@@ -65,13 +64,14 @@ DependeciesInjections.AddSingleton(builder);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
+}
 
-
-//Custom Middlewares
 app.UseGlobalErrorHandler(); //Custom Middlewares
-//app.UseBadRequestHandler(); //Custom Middlewares
 
 app.UseHttpsRedirection();
 app.UseCors();

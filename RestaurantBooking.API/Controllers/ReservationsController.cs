@@ -1,7 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RestaurantBooking.API.Helpers.Pagination;
+using RestaurantBooking.API.Models.ApiResponse;
 using RestaurantBooking.API.Models.DTO;
-using RestaurantBooking.API.Models.Enums;
-using RestaurantBooking.API.Models.Pagination;
 using RestaurantBooking.API.Services.ReservationService;
 
 namespace RestaurantBooking.API.Controllers
@@ -25,6 +26,7 @@ namespace RestaurantBooking.API.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create([FromBody] ReservationDto model)
@@ -61,6 +63,7 @@ namespace RestaurantBooking.API.Controllers
         }
 
         [HttpPost("cancel-reservation/{reservationCode}")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ModifyReservationStatus(string reservationCode)
@@ -70,6 +73,7 @@ namespace RestaurantBooking.API.Controllers
         }
 
         [HttpPut("modify-reservation/{reservationCode}")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ModifyReservationStatus(string reservationCode, ModifyReservationDto reservation)
@@ -79,6 +83,7 @@ namespace RestaurantBooking.API.Controllers
         }
 
         [HttpGet("get-reservation/{reservationCode}")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetReservationByCode(string reservationCode)

@@ -1,10 +1,11 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using RestaurantBooking.API.Data;
+using RestaurantBooking.API.Models.ApiResponse;
 using RestaurantBooking.API.Models.DTO;
 using RestaurantBooking.API.Models.Entities;
 using RestaurantBooking.API.Models.Enums;
-using RestaurantBooking.API.Models.Pagination;
+using RestaurantBooking.API.Helpers.Pagination;
 
 namespace RestaurantBooking.API.Services.TableService
 {
@@ -53,7 +54,7 @@ namespace RestaurantBooking.API.Services.TableService
             Table? entity = await LoadData().FirstOrDefaultAsync(e => e.TableId == uid);
             if (entity is null) return new ApiResponse<TableGDto>(statusCode: StatusCodes.Status400BadRequest);
             if(entity.Reservations.Any(e => e.Status == ReservationStatus.Approved || e.Status == ReservationStatus.Pending))
-                return new ApiResponse<TableGDto>(statusCode: StatusCodes.Status400BadRequest, detail: "Table cannot be deleted while is has either approved or pending reservations");
+                return new ApiResponse<TableGDto>(statusCode: StatusCodes.Status400BadRequest, message: "Table cannot be deleted while is has either approved or pending reservations");
             entity.IsDeleted = true;
             await dbContext.SaveChangesAsync();
             return new ApiResponse<TableGDto>(statusCode: StatusCodes.Status204NoContent);

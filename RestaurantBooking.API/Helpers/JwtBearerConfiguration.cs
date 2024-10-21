@@ -2,8 +2,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using RestaurantBooking.API.Models.DTO;
-using RestaurantBooking.API.Models.DTOs;
+using RestaurantBooking.API.Models.ApiResponse;
 
 namespace RestaurantBooking.API.Helpers
 {
@@ -32,23 +31,27 @@ namespace RestaurantBooking.API.Helpers
                         context.Response.ContentType = "application/json";
 
                         // Ensure we always have an error and error description.
-                        if (string.IsNullOrEmpty(context.Error)) context.Error = "invalid_token";
-                        if (string.IsNullOrEmpty(context.ErrorDescription)) context.ErrorDescription = "No Autorizado, necesita autentincarse antes de poder continuar";
+                        if (string.IsNullOrEmpty(context.Error)) context.Error = StatusCodes.Status401Unauthorized.ToString();
+                        if (string.IsNullOrEmpty(context.ErrorDescription)) context.ErrorDescription = "please login to access this resource";
 
                         if (context.AuthenticateFailure is not null && context.AuthenticateFailure.GetType() == typeof(SecurityTokenExpiredException))
                         {
                             var authenticationException = context.AuthenticateFailure as SecurityTokenExpiredException;
-                            context.ErrorDescription = $"session expired";
+                            context.ErrorDescription = $"expired session, please login again.";
                         }
 
-                        var error = new ApiErrorResponse(StatusCode: context.Response.StatusCode, Error: context.Error, ErrorDetail: context.ErrorDescription);
+                        var error = new ApiErrorResponse(
+                            statusCode: context.Response.StatusCode,
+                            errormessage: context.ErrorDescription);
                         return context.Response.WriteAsJsonAsync(error);
                     },
 
                     OnForbidden = context =>
                     {
                         context.Response.ContentType = "application/json";
-                        var error = new ApiErrorResponse(StatusCode: context.Response.StatusCode, Error: "Prohibido", ErrorDetail: "No posee los niveles de acceso necesario para esta acción o recurso");
+                        var error = new ApiErrorResponse(
+                            statusCode: context.Response.StatusCode,
+                            errormessage: "You are not authorized to access this resource");
                         return context.Response.WriteAsJsonAsync(error);
                     }
                 };

@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using RestaurantBooking.API.Data;
 using RestaurantBooking.API.Helpers;
+using RestaurantBooking.API.Models.ApiResponse;
 using RestaurantBooking.API.Models.DTO;
 using RestaurantBooking.API.Models.Entities;
 
@@ -17,12 +18,12 @@ namespace RestaurantBooking.API.Services.AuthService
                 .FirstOrDefaultAsync(e => e.Email.Equals(credentials.Email));
 
             if (user is null || !Utils.ComparePassword(credentials.Password, user.Password))
-                return new ApiResponse<StaffGDto>(statusCode: StatusCodes.Status400BadRequest, detail: "Credenciales Incorrectas. Por favor verificar e intentar otra vez.");
+                return new ApiResponse<StaffGDto>(statusCode: StatusCodes.Status400BadRequest, message: "Credenciales Incorrectas. Por favor verificar e intentar otra vez.");
 
             var dto = mapper.Map<StaffGDto>(user);
             string token = Utils.GenerateSessionJwtAsync(user, configuration);
 
-            return new ApiResponse<StaffGDto>(data: [dto], detail: "usuario logueado", token: token);
+            return new ApiResponse<StaffGDto>(data: [dto], message: "usuario logueado", token: token);
         }
 
         public async Task<ApiResponse<object>> ChangePasswordAsync(ChangePasswordDto model, string token)
@@ -37,14 +38,14 @@ namespace RestaurantBooking.API.Services.AuthService
             bool newPasswordMatch = Utils.ComparePassword(model.NewPassword, user.Password);
 
             if (!currentPasswordMatch) return new ApiResponse<object>(
-                statusCode: StatusCodes.Status400BadRequest, detail: "Su contraseña actual no coincide");
+                statusCode: StatusCodes.Status400BadRequest, message: "Su contraseña actual no coincide");
             if (newPasswordMatch) return new ApiResponse<object>(
-                statusCode: StatusCodes.Status400BadRequest, detail: "Coloque una contraseña diferente a la actual");
+                statusCode: StatusCodes.Status400BadRequest, message: "Coloque una contraseña diferente a la actual");
 
             user.Password = Utils.HashPassword(model.NewPassword);
             await dbContext.SaveChangesAsync();
 
-            return new ApiResponse<object>(detail: "Cambio de contraseña realizado");
+            return new ApiResponse<object>(message: "Cambio de contraseña realizado");
         }
 
     }
