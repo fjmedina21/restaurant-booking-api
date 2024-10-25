@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using RestaurantBooking.API.Data;
 using RestaurantBooking.API.Models.ApiResponse;
 using RestaurantBooking.API.Models.DTOs.ThirdPartyServices;
 
@@ -19,6 +21,24 @@ namespace RestaurantBooking.API.Helpers
             if (!deserializedObject.Valid) return new ApiResponse<CedulaValidationResponse>(statusCode: (int)response.StatusCode, message: deserializedObject.Message);
 
             return new ApiResponse<CedulaValidationResponse>();
+        }
+
+        public async static Task<bool> TableExist(string uid, RestaurantBookingContext dbContext)
+        {
+            return await dbContext.Tables
+                .Where(e => !e.IsDeleted).AnyAsync(e => e.TableId == uid);
+        }
+
+        public async static Task<bool> ReservationExist(string uid, RestaurantBookingContext dbContext)
+        {
+            return await dbContext.Reservations
+                .Where(e => !e.IsDeleted).AnyAsync(e => e.ReservationId == uid);
+        }
+
+        public async static Task<bool> UserExist(string uid, RestaurantBookingContext dbContext)
+        {
+            return await dbContext.RestaurantStaff
+                .Where(e => !e.IsDeleted).AnyAsync(e => e.StaffId == uid);
         }
     }
 }

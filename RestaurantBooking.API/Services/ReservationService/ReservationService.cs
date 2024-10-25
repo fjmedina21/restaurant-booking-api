@@ -13,15 +13,12 @@ namespace RestaurantBooking.API.Services.ReservationService
 {
     public class ReservationService(RestaurantBookingContext dbContext, IMapper mapper, IConfiguration configuration) :IReservationService
     {
-        private IQueryable<Reservation> LoadData()
-        {
-            return dbContext.Reservations
-                .Include(e=>e.Customer)
-                .Include(e=>e.Table).Where(e => !e.IsDeleted)
+        private IQueryable<Reservation> LoadData()=> dbContext.Reservations
+                .Include(e => e.Customer)
+                .Include(e => e.Table)
                 .Where(e => !e.IsDeleted)
-                .OrderByDescending(e=> e.ReservationStart).ThenBy(e => e.CreatedAt)
-                .AsQueryable();
-        }
+                .OrderByDescending(e => e.ReservationStart).ThenByDescending(e => e.CreatedAt);
+
 
         public Task<ApiResponse<ReservationGDto>> GetAllAsync(PaginationParams paginationParams) => throw new NotImplementedException();
         public async Task<ApiResponse<ReservationGDto>> GetAllAsync(PaginationParams paginationParams, string? status)
@@ -69,11 +66,10 @@ namespace RestaurantBooking.API.Services.ReservationService
         public async Task<ApiResponse<ReservationGDto>> CreateAsync <ReservationDto>(ReservationDto model)
         {
             Reservation entity = mapper.Map<Reservation>(model);
+            List<Reservation> reservations = await LoadData().AsNoTracking().ToListAsync();
+            if(!await Validations.TableExist(entity.TableId, dbContext)) return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status400BadRequest);
 
             // Validate that the new reservation does not conflict with existing reservations
-            List<Reservation> reservations = await LoadData().AsNoTracking().ToListAsync();
-            if(entity.Table.IsDeleted) return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status400BadRequest, message: "Table is deleted");
-
             if (reservations.Any(e => e.TableId == entity.TableId &&
                     e.ReservationStart < entity.ReservationEnd &&
                     e.ReservationEnd > entity.ReservationStart &&

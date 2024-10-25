@@ -11,13 +11,9 @@ namespace RestaurantBooking.API.Services.RestaurantStaffService
 {
     public class RestaurantStaffService(RestaurantBookingContext dbContext, IMapper mapper, IConfiguration configuration) : IRestaurantStaffService
     {
-        private IQueryable<RestaurantStaff> LoadData()
-        {
-            return dbContext.RestaurantStaff
-                .Where(e => e.IsDeleted == false)
-                .OrderByDescending(e=>e.CreatedAt)
-                .AsQueryable();
-        }
+        private IQueryable<RestaurantStaff> LoadData() => dbContext.RestaurantStaff
+            .Where(e => e.IsDeleted == false)
+            .OrderByDescending(e => e.CreatedAt);
 
         public async Task<ApiResponse<StaffGDto>> GetAllAsync(PaginationParams paginationParams)
         {

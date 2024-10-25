@@ -11,14 +11,10 @@ namespace RestaurantBooking.API.Services.TableService
 {
     public class TableService(RestaurantBookingContext dbContext, IMapper mapper):ITableService
     {
-        private IQueryable<Table> LoadData()
-        {
-            return dbContext.Tables
-                .Include(e => e.Reservations).Where(e=> !e.IsDeleted)
-                .Where(e => !e.IsDeleted)
-                .OrderBy(e=> e.Capacity)
-                .AsQueryable();
-        }
+        private IQueryable<Table> LoadData() => dbContext.Tables
+            .Include(e => e.Reservations).Where(e => !e.IsDeleted)
+            .Where(e => !e.IsDeleted)
+            .OrderBy(e => e.Name);
 
         public async Task<ApiResponse<TableGDto>> GetAllAsync(PaginationParams paginationParams)
         {
