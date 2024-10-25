@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantBooking.API.Helpers;
 using RestaurantBooking.API.Models.ApiResponse;
@@ -29,6 +30,7 @@ namespace RestaurantBooking.API.Controllers
 
         [HttpPost]
         [ValidateModel]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create([FromBody] RegisterStaffDto model)

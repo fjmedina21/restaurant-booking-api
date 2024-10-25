@@ -72,6 +72,8 @@ namespace RestaurantBooking.API.Services.ReservationService
 
             // Validate that the new reservation does not conflict with existing reservations
             List<Reservation> reservations = await LoadData().AsNoTracking().ToListAsync();
+            if(entity.Table.IsDeleted) return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status400BadRequest, message: "Table is deleted");
+
             if (reservations.Any(e => e.TableId == entity.TableId &&
                     e.ReservationStart < entity.ReservationEnd &&
                     e.ReservationEnd > entity.ReservationStart &&
@@ -108,40 +110,36 @@ namespace RestaurantBooking.API.Services.ReservationService
         {
             Reservation? entity = await LoadData().FirstOrDefaultAsync(e => e.ReservationId == uid);
             if (entity is null) return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status400BadRequest);
-            if(entity.Status == ReservationStatus.Approved || entity.Status == ReservationStatus.Rejected)
+            if(entity.Status == ReservationStatus.Approved || entity.Status == ReservationStatus.Pending)
                 return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status400BadRequest, message: "Reservation cannot be deleted while is either approved or pending");
             entity.IsDeleted = true;
             await dbContext.SaveChangesAsync();
             return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status204NoContent);
         }
 
-        public async Task<ApiResponse<ReservationGDto>> ModifyReservationStatus(string uid, string status)
+        public async Task<ApiResponse<ReservationGDto>> ChangeReservationStatusAsync(string uid, string status)
         {
             Reservation? entity = await LoadData().FirstOrDefaultAsync(e => e.ReservationId.Equals(uid));
             if (entity is null) return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status400BadRequest);
 
             if((entity.Status == ReservationStatus.Cancelled
                 || entity.Status == ReservationStatus.Completed
-                || entity.Status == ReservationStatus.Rejected
-               || entity.Status == ReservationStatus.Approved)
-               && status.ToLower() == ReservationStatus.Rejected.ToString().ToLower())
-                return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status400BadRequest, message: $"Reservation cannot be rejected because it has already been {entity.Status.ToString().ToLower()}.");
+                || entity.Status == ReservationStatus.Rejected) &&
+               (status.ToLower() == ReservationStatus.Rejected.ToString().ToLower()
+                || status.ToLower() == ReservationStatus.Approved.ToString().ToLower()
+                ||status.ToLower() == ReservationStatus.Completed.ToString().ToLower())
+               )
+                return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status400BadRequest, message: $"Reservation cannot be {status} because it has already been {entity.Status.ToString().ToLower()}.");
 
             switch (status.ToLower())
             {
                 case "approved":
-                    if(entity.Status == ReservationStatus.Cancelled)
-                        return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status400BadRequest, message: $"Reservation cannot be rejected because it has already been {entity.Status.ToString().ToLower()}.");
                     entity.Status = ReservationStatus.Approved;
                     break;
                 case "rejected":
-                    if(entity.Status == ReservationStatus.Cancelled)
-                        return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status400BadRequest, message: $"Reservation cannot be rejected because it has already been {entity.Status.ToString().ToLower()}.");
                     entity.Status = ReservationStatus.Rejected;
                     break;
                 case "completed":
-                    if(entity.Status == ReservationStatus.Cancelled)
-                        return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status400BadRequest, message: $"Reservation cannot be rejected because it has already been {entity.Status.ToString().ToLower()}.");
                     entity.Status = ReservationStatus.Completed;
                     break;
                 default:
@@ -160,7 +158,7 @@ namespace RestaurantBooking.API.Services.ReservationService
 
             return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status200OK);
         }
-        public async Task<ApiResponse<ReservationGDto>> CancelReservesation(string reservationCode)
+        public async Task<ApiResponse<ReservationGDto>> CancelReservesationAsync(string reservationCode)
         {
             Reservation? entity = await LoadData().FirstOrDefaultAsync(e => e.ReservationCode == reservationCode);
             if (entity is null) return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status400BadRequest);
@@ -182,7 +180,7 @@ namespace RestaurantBooking.API.Services.ReservationService
             return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status200OK);
         }
 
-        public async Task<ApiResponse<ReservationGDto>> GetReservesationByCode(string reservationCode)
+        public async Task<ApiResponse<ReservationGDto>> GetReservesationByCodeAsync(string reservationCode)
         {
             Reservation? entity = await LoadData().FirstOrDefaultAsync(e => e.ReservationCode == reservationCode);
             if (entity is null) return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status404NotFound);
@@ -190,7 +188,7 @@ namespace RestaurantBooking.API.Services.ReservationService
             return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status200OK, data: [dto]);
         }
 
-        public async Task<ApiResponse<ReservationGDto>> ModifyReservesation(string reservationCode, ModifyReservationDto model)
+        public async Task<ApiResponse<ReservationGDto>> ModifyReservesationAsync(string reservationCode, ModifyReservationDto model)
         {
             Reservation? dbEntity = await LoadData().FirstOrDefaultAsync(e => e.ReservationCode == reservationCode);
             if (dbEntity is null) return new ApiResponse<ReservationGDto>(statusCode: StatusCodes.Status400BadRequest);

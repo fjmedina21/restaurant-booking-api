@@ -6,7 +6,6 @@ namespace RestaurantBooking.API.Data;
 
 public class RestaurantBookingContext(DbContextOptions<RestaurantBookingContext> options)  : DbContext(options)
 {
-    public DbSet<Role> Roles { get; set; }
     public DbSet<RestaurantStaff> RestaurantStaff { get; set; }
     public DbSet<Customer> Customers { get; set; }
     public DbSet<Table> Tables { get; set; }
@@ -35,9 +34,16 @@ public class RestaurantBookingContext(DbContextOptions<RestaurantBookingContext>
             .WithMany(t => t.Reservations)
             .HasForeignKey(r => r.TableId);
 
-        modelBuilder.Entity<RestaurantStaff>()
-            .HasOne(rs => rs.Role)
-            .WithMany(r => r.RestaurantStaff)
-            .HasForeignKey(rs => rs.RoleId);
+        //seed data
+        var user = new RestaurantStaff()
+         {
+            StaffId = Guid.NewGuid().ToString(),
+            FirstName = "Francisco",
+            LastName = "Medina",
+            Email = "fjmedina21@gmail.com",
+            Password = Utils.HashPassword("123456")
+        };
+
+        modelBuilder.Entity<RestaurantStaff>().HasData(user);
     }
 }

@@ -2,10 +2,12 @@ using System.Net;
 
 namespace RestaurantBooking.API.Models.ApiResponse
 {
-	public class BaseApiResponse(int statusCode = StatusCodes.Status200OK)
+	public abstract class BaseApiResponse(int statusCode = StatusCodes.Status200OK, string? message = null)
 	{
 		public bool Success { get; set; } = statusCode < 400;
 		public int StatusCode { get; } = statusCode;
+		public string? Message { get; set; } = message ?? DefaultMessage(statusCode);
+
 
 		protected static string? DefaultMessage(int statusCode) => statusCode switch
 		{

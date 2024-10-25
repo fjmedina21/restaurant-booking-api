@@ -22,8 +22,9 @@ namespace RestaurantBooking.API.Helpers
             List<Claim> authClaims =
             [
                 new Claim("userId", entity.StaffId),
+                new Claim("firstName", entity.FirstName),
+                new Claim("lastName", entity.LastName),
                 new Claim("email", entity.Email),
-                new Claim("role", entity.Role.Name)
             ];
 
             var secretKey = new SymmetricSecurityKey(key);
@@ -41,8 +42,9 @@ namespace RestaurantBooking.API.Helpers
 
             var to = new TokenPayload(
                 UserId:jwt.Claims.First(c => c.Type == "userId").Value,
-                Email: jwt.Claims.First(c => c.Type == "email").Value,
-                Role: jwt.Claims.First(c => c.Type == "role").Value
+                FirstName: jwt.Claims.First(c => c.Type == "firstName").Value,
+                LastName: jwt.Claims.First(c => c.Type == "lastName").Value,
+                Email: jwt.Claims.First(c => c.Type == "email").Value
                 );
 
             return to;

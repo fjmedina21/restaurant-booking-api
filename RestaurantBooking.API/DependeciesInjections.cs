@@ -2,7 +2,6 @@
 using RestaurantBooking.API.Services.AuthService;
 using RestaurantBooking.API.Services.ReservationService;
 using RestaurantBooking.API.Services.RestaurantStaffService;
-using RestaurantBooking.API.Services.RoleService;
 using RestaurantBooking.API.Services.TableService;
 
 namespace RestaurantBooking.API
@@ -22,7 +21,6 @@ namespace RestaurantBooking.API
         {
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IRestaurantStaffService, RestaurantStaffService>();
-            builder.Services.AddScoped<IRoleService, RoleService>();
             builder.Services.AddScoped<ITableService, TableService>();
             builder.Services.AddScoped<IReservationService, ReservationService>();
         }

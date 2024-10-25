@@ -6,7 +6,7 @@ namespace RestaurantBooking.API.Controllers
     [Route("[controller]")]
     [ApiController]
     [Authorize]
-    public class BaseController : ControllerBase
+    public abstract class BaseController : ControllerBase
     {
     }
 }

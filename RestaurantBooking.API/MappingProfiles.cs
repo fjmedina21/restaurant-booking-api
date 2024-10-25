@@ -11,9 +11,6 @@ namespace RestaurantBooking.API
             CreateMap<RegisterStaffDto, RestaurantStaff>();
             CreateMap<RestaurantStaff, StaffGDto>();
 
-            CreateMap<RoleDto, Role>();
-            CreateMap<Role, RoleGDto>();
-
             CreateMap<TableDto, Table>();
             CreateMap<Table, TableGDto>();
 

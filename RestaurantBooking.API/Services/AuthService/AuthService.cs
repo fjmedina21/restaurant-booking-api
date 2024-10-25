@@ -14,7 +14,6 @@ namespace RestaurantBooking.API.Services.AuthService
         {
             RestaurantStaff? user = await dbContext.RestaurantStaff
                 .Where(e => !e.IsDeleted)
-                .Include(e => e.Role)
                 .FirstOrDefaultAsync(e => e.Email.Equals(credentials.Email));
 
             if (user is null || !Utils.ComparePassword(credentials.Password, user.Password))

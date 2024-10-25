@@ -9,13 +9,12 @@ using RestaurantBooking.API.Helpers.Pagination;
 
 namespace RestaurantBooking.API.Services.RestaurantStaffService
 {
-    public class RestaurantStaffService(RestaurantBookingContext dbContext, IMapper mapper) : IRestaurantStaffService
+    public class RestaurantStaffService(RestaurantBookingContext dbContext, IMapper mapper, IConfiguration configuration) : IRestaurantStaffService
     {
         private IQueryable<RestaurantStaff> LoadData()
         {
             return dbContext.RestaurantStaff
                 .Where(e => e.IsDeleted == false)
-                .Include(e => e.Role)
                 .OrderByDescending(e=>e.CreatedAt)
                 .AsQueryable();
         }
@@ -46,7 +45,9 @@ namespace RestaurantBooking.API.Services.RestaurantStaffService
             await dbContext.SaveChangesAsync();
 
             StaffGDto dto = mapper.Map<StaffGDto>(entry.Entity);
-            return new ApiResponse<StaffGDto>(statusCode: StatusCodes.Status201Created, data:[dto]);
+            string token = Utils.GenerateSessionJwtAsync(entry.Entity, configuration);
+
+            return new ApiResponse<StaffGDto>(statusCode: StatusCodes.Status201Created, data:[dto], token:token);
         }
 
         public async Task<ApiResponse<StaffGDto>> UpdateAsync<RegisterStaffDto>(string uid, RegisterStaffDto model) => throw new NotImplementedException();

@@ -35,15 +35,6 @@ namespace RestaurantBooking.API.Controllers
             return StatusCode(response.StatusCode, response);
         }
 
-        /*[HttpPut("{uid}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Update(string uid, [FromBody] ReservationDto model)
-        {
-            ApiResponse<ReservationGDto> response = await tableService.UpdateAsync(uid, model);
-            return StatusCode(response.StatusCode, response);
-        }*/
-
         [HttpDelete("{uid}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -53,42 +44,42 @@ namespace RestaurantBooking.API.Controllers
             return StatusCode(response.StatusCode, response);
         }
 
-        [HttpPost("{uid}/modify-status")]
+        [HttpPost("{uid}/change-status")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ModifyReservationStatus(string uid, string status)
         {
-            ApiResponse<ReservationGDto> response = await reservationService.ModifyReservationStatus(uid, status );
+            ApiResponse<ReservationGDto> response = await reservationService.ChangeReservationStatusAsync(uid, status );
             return StatusCode(response.StatusCode, response);
         }
 
-        [HttpPost("cancel-reservation/{reservationCode}")]
+        [HttpPost("{reservationCode}/cancel")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> ModifyReservationStatus(string reservationCode)
+        public async Task<IActionResult> CancelReservesation(string reservationCode)
         {
-            ApiResponse<ReservationGDto> response = await reservationService.CancelReservesation(reservationCode);
+            ApiResponse<ReservationGDto> response = await reservationService.CancelReservesationAsync(reservationCode);
             return StatusCode(response.StatusCode, response);
         }
 
-        [HttpPut("modify-reservation/{reservationCode}")]
+        [HttpPut("{reservationCode}/edit")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ModifyReservationStatus(string reservationCode, ModifyReservationDto reservation)
         {
-            ApiResponse<ReservationGDto> response = await reservationService.ModifyReservesation(reservationCode, reservation);
+            ApiResponse<ReservationGDto> response = await reservationService.ModifyReservesationAsync(reservationCode, reservation);
             return StatusCode(response.StatusCode, response);
         }
 
-        [HttpGet("get-reservation/{reservationCode}")]
+        [HttpGet("{reservationCode}/info")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetReservationByCode(string reservationCode)
         {
-            ApiResponse<ReservationGDto> response = await reservationService.GetReservesationByCode(reservationCode);
+            ApiResponse<ReservationGDto> response = await reservationService.GetReservesationByCodeAsync(reservationCode);
             return StatusCode(response.StatusCode, response);
         }
     }
