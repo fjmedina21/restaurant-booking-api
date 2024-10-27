@@ -17,7 +17,7 @@ namespace RestaurantBooking.API.Services.ReservationService
                 .Include(e => e.Customer)
                 .Include(e => e.Table)
                 .Where(e => !e.IsDeleted)
-                .OrderByDescending(e => e.ReservationStart).ThenByDescending(e => e.CreatedAt);
+                .OrderByDescending(e => e.CreatedAt).ThenByDescending(e => e.ReservationStart);
 
 
         public Task<ApiResponse<ReservationGDto>> GetAllAsync(PaginationParams paginationParams) => throw new NotImplementedException();

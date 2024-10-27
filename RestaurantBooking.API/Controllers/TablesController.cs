@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantBooking.API.Models.ApiResponse;
 using RestaurantBooking.API.Models.DTO;
@@ -53,10 +54,11 @@ namespace RestaurantBooking.API.Controllers
         }
 
         [HttpGet("available-tables")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAvailableTables([FromQuery] DateTime reservationStart)
+        public async Task<IActionResult> GetAvailableTables([FromQuery] DateTime reservationStart, [FromQuery] DateTime reservationEnd)
         {
-            ApiResponse<TableGDto> response = await tableService.GetAvailableTablesAsync(reservationStart);
+            ApiResponse<TableGDto> response = await tableService.GetAvailableTablesAsync(reservationStart, reservationEnd);
             return StatusCode(response.StatusCode, response);
         }
     }

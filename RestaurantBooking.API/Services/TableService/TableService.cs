@@ -14,7 +14,7 @@ namespace RestaurantBooking.API.Services.TableService
         private IQueryable<Table> LoadData() => dbContext.Tables
             .Include(e => e.Reservations).Where(e => !e.IsDeleted)
             .Where(e => !e.IsDeleted)
-            .OrderBy(e => e.Name);
+            .OrderByDescending(e => e.CreatedAt);
 
         public async Task<ApiResponse<TableGDto>> GetAllAsync(PaginationParams paginationParams)
         {
@@ -55,15 +55,19 @@ namespace RestaurantBooking.API.Services.TableService
             await dbContext.SaveChangesAsync();
             return new ApiResponse<TableGDto>(statusCode: StatusCodes.Status204NoContent);
         }
-        public async Task<ApiResponse<TableGDto>> GetAvailableTablesAsync(DateTime reservationStart)
+        public async Task<ApiResponse<TableGDto>> GetAvailableTablesAsync(DateTime reservationStart, DateTime reservationEnd)
         {
             List<Table> entities = await LoadData().AsNoTracking().ToListAsync();
             List<Table> availableTables = entities
                 .Where(e => e.Reservations.All(r =>
-                    (r.Status == ReservationStatus.Cancelled || r.Status == ReservationStatus.Rejected || r.Status == ReservationStatus.Completed) // Only allow cancelled or completed reservations
-                 || r.ReservationEnd.Date != reservationStart.Date // Allow if the dates are different
-                 || r.ReservationEnd <= reservationStart)) // Ensure that any reservation ends before the new reservation starts if on the same date
+                    // Si el estado no es Pending o Approved, se considera no bloqueante
+                    r.Status != ReservationStatus.Pending && r.Status != ReservationStatus.Approved ||
+                    // Para reservas en Pending o Approved, validar que no haya solapamiento
+                    (reservationStart < r.ReservationStart || reservationStart >= r.ReservationEnd) &&
+                    (reservationEnd <= r.ReservationStart || reservationEnd > r.ReservationEnd)))
                 .ToList();
+
+
 
             List<TableGDto> dto = mapper.Map<List<TableGDto>>(availableTables);
 
